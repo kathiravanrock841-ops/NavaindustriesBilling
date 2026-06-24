@@ -13,10 +13,12 @@ import { CreateLetter } from "./pages/CreateLetter";
 import { InvoicePreview } from "./pages/InvoicePreview";
 import { Invoices } from "./pages/Invoices";
 import { Reports } from "./pages/Reports";
+import { Salary } from "./pages/Salary";
 
 import { InvoiceProvider } from "./context/InvoiceContext";
 import { CustomerProvider } from "./context/CustomerContext";
 import { ProductProvider } from "./context/ProductContext";
+import { SalaryProvider } from "./context/SalaryContext";
 
 export const router = createBrowserRouter([
   {
@@ -30,7 +32,9 @@ export const router = createBrowserRouter([
       <ProductProvider>
         <CustomerProvider>
           <InvoiceProvider>
-            <Layout />
+            <SalaryProvider>
+              <Layout />
+            </SalaryProvider>
           </InvoiceProvider>
         </CustomerProvider>
       </ProductProvider>
@@ -101,6 +105,15 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Invoices />
+          </ProtectedRoute>
+        ),
+      },
+
+      {
+        path: "salary",
+        element: (
+          <ProtectedRoute>
+            <Salary />
           </ProtectedRoute>
         ),
       },
