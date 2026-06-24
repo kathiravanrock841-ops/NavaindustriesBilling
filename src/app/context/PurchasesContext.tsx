@@ -5,13 +5,16 @@ export interface Purchase {
   productName: string;
   amount: number;
   date: string;
+  quantity: string;
+  attachmentName: string;
+  attachmentFile: string;
   createdAt: Date;
 }
 
 interface PurchasesContextType {
   purchases: Purchase[];
-  addPurchase: (productName: string, amount: number, date: string) => void;
-  updatePurchase: (id: string, productName: string, amount: number, date: string) => void;
+  addPurchase: (productName: string, amount: number, date: string, quantity: string, attachmentName: string, attachmentFile: string) => void;
+  updatePurchase: (id: string, productName: string, amount: number, date: string, quantity: string, attachmentName: string, attachmentFile: string) => void;
   deletePurchase: (id: string) => void;
 }
 
@@ -20,21 +23,24 @@ const PurchasesContext = createContext<PurchasesContextType | undefined>(undefin
 export function PurchasesProvider({ children }: { children: ReactNode }) {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
 
-  const addPurchase = (productName: string, amount: number, date: string) => {
+  const addPurchase = (productName: string, amount: number, date: string, quantity: string, attachmentName: string, attachmentFile: string) => {
     const newPurchase: Purchase = {
       id: Date.now().toString(),
       productName,
       amount,
       date,
+      quantity,
+      attachmentName,
+      attachmentFile,
       createdAt: new Date(),
     };
     setPurchases([...purchases, newPurchase]);
   };
 
-  const updatePurchase = (id: string, productName: string, amount: number, date: string) => {
+  const updatePurchase = (id: string, productName: string, amount: number, date: string, quantity: string, attachmentName: string, attachmentFile: string) => {
     setPurchases(
       purchases.map((purchase) =>
-        purchase.id === id ? { ...purchase, productName, amount, date } : purchase
+        purchase.id === id ? { ...purchase, productName, amount, date, quantity, attachmentName, attachmentFile } : purchase
       )
     );
   };

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Search, Edit2, Trash2 } from "lucide-react";
+import { Plus, Search, Edit2, Trash2, Download } from "lucide-react";
 import { usePurchases } from "../context/PurchasesContext";
 
 export function Purchases() {
@@ -7,7 +7,7 @@ export function Purchases() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ productName: "", amount: "", date: "" });
+  const [formData, setFormData] = useState({ productName: "", amount: "", date: "", quantity: "", attachmentName: "", attachmentFile: "" });
 
   const filteredPurchases = purchases.filter((purchase) =>
     purchase.productName.toLowerCase().includes(searchTerm.toLowerCase())
@@ -15,28 +15,43 @@ export function Purchases() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.productName || !formData.amount || !formData.date) return;
+    if (!formData.productName || !formData.amount || !formData.date || !formData.quantity) return;
 
     if (editingId) {
-      updatePurchase(editingId, formData.productName, parseFloat(formData.amount), formData.date);
+      updatePurchase(editingId, formData.productName, parseFloat(formData.amount), formData.date, formData.quantity, formData.attachmentName, formData.attachmentFile);
       setEditingId(null);
     } else {
-      addPurchase(formData.productName, parseFloat(formData.amount), formData.date);
+      addPurchase(formData.productName, parseFloat(formData.amount), formData.date, formData.quantity, formData.attachmentName, formData.attachmentFile);
     }
-    setFormData({ productName: "", amount: "", date: "" });
+    setFormData({ productName: "", amount: "", date: "", quantity: "", attachmentName: "", attachmentFile: "" });
     setShowForm(false);
   };
 
-  const handleEdit = (id: string, productName: string, amount: number, date: string) => {
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setFormData({
+          ...formData,
+          attachmentName: file.name,
+          attachmentFile: event.target?.result as string,
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEdit = (id: string, productName: string, amount: number, date: string, quantity: string, attachmentName: string, attachmentFile: string) => {
     setEditingId(id);
-    setFormData({ productName, amount: amount.toString(), date });
+    setFormData({ productName, amount: amount.toString(), date, quantity, attachmentName, attachmentFile });
     setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ productName: "", amount: "", date: "" });
+    setFormData({ productName: "", amount: "", date: "", quantity: "", attachmentName: "", attachmentFile: "" });
   };
 
   const formatDate = (dateString: string) => {
@@ -118,6 +133,33 @@ export function Purchases() {
                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all text-sm"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Quantity (kg or number of items)
+              </label>
+              <input
+                type="text"
+                value={formData.quantity}
+                onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                placeholder="e.g., 5 kg or 10 items"
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all text-sm"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Attachment (Receipt/Invoice)
+              </label>
+              <input
+                type="file"
+                onChange={handleFileChange}
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all text-sm"
+              />
+              {formData.attachmentName && (
+                <div className="mt-2 text-xs text-gray-600">
+                  Selected: {formData.attachmentName}
+                </div>
+              )}
+            </div>
             <div className="flex gap-3">
               <button
                 type="submit"
@@ -156,8 +198,10 @@ export function Purchases() {
             <thead>
               <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
                 <th className="px-6 py-4 font-medium">Product Name</th>
+                <th className="px-6 py-4 font-medium">Quantity</th>
                 <th className="px-6 py-4 font-medium">Amount</th>
                 <th className="px-6 py-4 font-medium">Date</th>
+                <th className="px-6 py-4 font-medium">Attachment</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
@@ -168,16 +212,34 @@ export function Purchases() {
                     <div className="font-medium text-gray-900">{purchase.productName}</div>
                   </td>
                   <td className="px-6 py-4 text-gray-700">
+                    {purchase.quantity}
+                  </td>
+                  <td className="px-6 py-4 text-gray-700">
                     ₹{purchase.amount.toLocaleString('en-IN')}
                   </td>
                   <td className="px-6 py-4 text-gray-600">
                     {formatDate(purchase.date)}
                   </td>
                   <td className="px-6 py-4">
+                    {purchase.attachmentFile ? (
+                      <a
+                        href={purchase.attachmentFile}
+                        download={purchase.attachmentName}
+                        className="inline-flex items-center gap-1 text-blue-600 hover:text-blue-800 transition-colors"
+                        title="Download attachment"
+                      >
+                        <Download size={16} />
+                        <span className="text-xs">{purchase.attachmentName}</span>
+                      </a>
+                    ) : (
+                      <span className="text-gray-400 text-sm">—</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() =>
-                          handleEdit(purchase.id, purchase.productName, purchase.amount, purchase.date)
+                          handleEdit(purchase.id, purchase.productName, purchase.amount, purchase.date, purchase.quantity, purchase.attachmentName, purchase.attachmentFile)
                         }
                         className="p-1.5 text-gray-400 hover:text-blue-600 rounded transition-colors"
                         title="Edit"
@@ -197,7 +259,7 @@ export function Purchases() {
               ))}
               {filteredPurchases.length === 0 && (
                 <tr>
-                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     No purchases found.
                   </td>
                 </tr>
