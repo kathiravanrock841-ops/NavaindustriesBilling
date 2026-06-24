@@ -7,7 +7,7 @@ export function Salary() {
   const [searchTerm, setSearchTerm] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [formData, setFormData] = useState({ name: "", salary: "" });
+  const [formData, setFormData] = useState({ name: "", salary: "", date: "" });
 
   const filteredLabours = labours.filter((labour) =>
     labour.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -15,31 +15,36 @@ export function Salary() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.name || !formData.salary) return;
+    if (!formData.name || !formData.salary || !formData.date) return;
 
     if (editingId) {
-      updateLabour(editingId, formData.name, parseFloat(formData.salary));
+      updateLabour(editingId, formData.name, parseFloat(formData.salary), formData.date);
       setEditingId(null);
     } else {
-      addLabour(formData.name, parseFloat(formData.salary));
+      addLabour(formData.name, parseFloat(formData.salary), formData.date);
     }
-    setFormData({ name: "", salary: "" });
+    setFormData({ name: "", salary: "", date: "" });
     setShowForm(false);
   };
 
-  const handleEdit = (id: string, name: string, salary: number) => {
+  const handleEdit = (id: string, name: string, salary: number, date: string) => {
     setEditingId(id);
-    setFormData({ name, salary: salary.toString() });
+    setFormData({ name, salary: salary.toString(), date });
     setShowForm(true);
   };
 
   const handleCancel = () => {
     setShowForm(false);
     setEditingId(null);
-    setFormData({ name: "", salary: "" });
+    setFormData({ name: "", salary: "", date: "" });
   };
 
   const totalSalary = labours.reduce((sum, labour) => sum + labour.salary, 0);
+
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-IN');
+  };
 
   return (
     <div className="space-y-6 h-full flex flex-col">
@@ -87,6 +92,17 @@ export function Salary() {
                 className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all text-sm"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date
+              </label>
+              <input
+                type="date"
+                value={formData.date}
+                onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all text-sm"
+              />
+            </div>
             <div className="flex gap-3">
               <button
                 type="submit"
@@ -126,6 +142,7 @@ export function Salary() {
               <tr className="bg-gray-50 border-b border-gray-200 text-gray-500 text-xs uppercase tracking-wider">
                 <th className="px-6 py-4 font-medium">Labour Name</th>
                 <th className="px-6 py-4 font-medium">Salary</th>
+                <th className="px-6 py-4 font-medium">Date</th>
                 <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
             </thead>
@@ -138,11 +155,14 @@ export function Salary() {
                   <td className="px-6 py-4 text-gray-700">
                     ₹{labour.salary.toLocaleString('en-IN')}
                   </td>
+                  <td className="px-6 py-4 text-gray-600">
+                    {formatDate(labour.date)}
+                  </td>
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() =>
-                          handleEdit(labour.id, labour.name, labour.salary)
+                          handleEdit(labour.id, labour.name, labour.salary, labour.date)
                         }
                         className="p-1.5 text-gray-400 hover:text-blue-600 rounded transition-colors"
                         title="Edit"
@@ -162,7 +182,7 @@ export function Salary() {
               ))}
               {filteredLabours.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={4} className="px-6 py-12 text-center text-gray-500">
                     No labour records found.
                   </td>
                 </tr>

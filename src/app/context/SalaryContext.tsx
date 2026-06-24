@@ -4,13 +4,14 @@ export interface Labour {
   id: string;
   name: string;
   salary: number;
+  date: string;
   createdAt: Date;
 }
 
 interface SalaryContextType {
   labours: Labour[];
-  addLabour: (name: string, salary: number) => void;
-  updateLabour: (id: string, name: string, salary: number) => void;
+  addLabour: (name: string, salary: number, date: string) => void;
+  updateLabour: (id: string, name: string, salary: number, date: string) => void;
   deleteLabour: (id: string) => void;
 }
 
@@ -19,20 +20,21 @@ const SalaryContext = createContext<SalaryContextType | undefined>(undefined);
 export function SalaryProvider({ children }: { children: ReactNode }) {
   const [labours, setLabours] = useState<Labour[]>([]);
 
-  const addLabour = (name: string, salary: number) => {
+  const addLabour = (name: string, salary: number, date: string) => {
     const newLabour: Labour = {
       id: Date.now().toString(),
       name,
       salary,
+      date,
       createdAt: new Date(),
     };
     setLabours([...labours, newLabour]);
   };
 
-  const updateLabour = (id: string, name: string, salary: number) => {
+  const updateLabour = (id: string, name: string, salary: number, date: string) => {
     setLabours(
       labours.map((labour) =>
-        labour.id === id ? { ...labour, name, salary } : labour
+        labour.id === id ? { ...labour, name, salary, date } : labour
       )
     );
   };
