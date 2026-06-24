@@ -149,16 +149,18 @@ export function Purchases() {
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Attachment (Receipt/Invoice)
               </label>
-              <input
-                type="file"
-                onChange={handleFileChange}
-                className="w-full px-4 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900/10 focus:border-gray-400 transition-all text-sm"
-              />
-              {formData.attachmentName && (
-                <div className="mt-2 text-xs text-gray-600">
-                  Selected: {formData.attachmentName}
-                </div>
-              )}
+              <label className="w-full px-4 py-3 bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 hover:bg-gray-100 transition-all cursor-pointer flex items-center justify-center text-sm text-gray-600">
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+                {formData.attachmentName ? (
+                  <span className="text-gray-900 font-medium">✓ {formData.attachmentName}</span>
+                ) : (
+                  <span>Click to select file or drag & drop</span>
+                )}
+              </label>
             </div>
             <div className="flex gap-3">
               <button
